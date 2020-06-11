@@ -1,4 +1,4 @@
-# Quantum_Stimulator
+# Quantum Stimulator
 
 ## A quantum computer simulator
 
