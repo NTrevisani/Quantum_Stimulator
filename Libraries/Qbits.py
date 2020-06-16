@@ -7,7 +7,7 @@ import numpy as np
 PI = math.pi
 
 class QBit(object):
-    """Basic class for the managing of geometric shapes."""
+    """Basic class for the managing of qbits."""
 
     # sould we initialize all the
     # angles to 0? Does it make sense to have direct access to
@@ -45,17 +45,29 @@ class QBit(object):
         otherwise it is measured in the |1> state.
         After the measurement, the theta and phi values of the qbit are
         updated accordingly. 
+        If the qbit is in the |0> state, the function returns 0, if it is in
+        the |1> state, it returns 1.
         """
         random_number = random.uniform(0, 1)
         if random_number < np.cos(self.theta):
-            print("The qbit is in the |0> state")
             self.theta = 0
             self.phi = 0
+            return 0
         else:
-            print("The qbit is in the |1> state")
             self.theta = PI
             self.phi = 0
-    
+            return 1
+            
+    def get_state(self):
+        """Prints the qbit state.
+
+        The qbit is measured and the state is printed.
+        """
+        if self.measure() == 0:
+            print("The qbit is in the |0> state")
+        else:
+            print("The qbit is in the |1> state")
+            
     def __str__(self):
         """Print as 'A QBit with angle 'theta' and phase 'phi'."""
         self_class = type(self).__name__
