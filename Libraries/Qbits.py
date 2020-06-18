@@ -20,9 +20,20 @@ class QBit(object):
         """ 
         self.theta = 0
         self.phi = 0
-        
+
+    # Qbit angles
+
     def set_theta(self, theta):
-        self._theta = theta
+        """Ensures 0 < theta < PI"""
+        while theta > 2*PI:
+            theta = theta - 2*PI
+        while theta < 0:
+            theta = theta + 2*PI
+        if theta > PI and theta < 2*PI:
+            theta = 2*PI - theta
+        if theta < 0.001: # is this cheating?
+            theta = 0
+        self._theta = np.around(theta, 8)
 
     def get_theta(self):
         return self._theta
@@ -30,13 +41,22 @@ class QBit(object):
     theta = property(get_theta, set_theta, "The qbit angle in radians")          
 
     def set_phi(self, phi):
-        self._phi = phi
+        """Ensures 0 < phi < 2*PI"""
+        while phi >= 2*PI:
+            phi = phi - 2*PI
+        while phi < 0:
+            phi = phi + 2*PI
+        if phi < 0.001: # is this cheating?
+            phi = 0
+        self._phi = np.around(phi, 8)
 
     def get_phi(self):
         return self._phi
 
     phi = property(get_phi, set_phi, "The qbit phi phase in radians")          
 
+    # Qbit measurement
+    
     def measure(self):
         """Measures the qbit state in the canonical base.
 
@@ -68,18 +88,82 @@ class QBit(object):
         else:
             print("The qbit is in the |1> state")
             
+    # Support representations
+
+    def as_vector(self):
+        """Represents a qbit state as a vector.
+
+        The qbit state takes the form:
+        |       cos (theta/2)      |
+        | exp(i phi) sin (theta/2) |
+        """
+        qbit_vector = np.array([[np.around(np.cos(self.theta/2),8)],
+                                [np.around(np.exp(self.phi*1j)*np.sin(self.theta/2),8)]])
+        return qbit_vector
+
+    def from_vector(vector_repr):
+        """Returns a qbit from its vector representation."""
+        new_theta = float(np.real(2*np.arccos(vector_repr[0])))
+        #print("New_theta = ",new_theta)
+        if np.sin(new_theta/2) < 0.0001: # is this cheating?
+            new_phi = 0
+        else:
+            new_phi   = float(np.angle(vector_repr[1] / np.sin(new_theta/2)))
+        #print("New_phi = ", new_phi)
+        support_qbit = QBit()
+        support_qbit.theta = new_theta
+        support_qbit.phi   = new_phi
+        return support_qbit
+        
+    # 1-qbit gates
+    
+    def x_gate(self):
+        """Applies a 'x' gate to target qbit.
+        
+        The x gate is represented as a matrix:
+        | 0 1 |
+        | 1 0 |
+        """
+        x_gate_matrix = np.array([[0, 1],
+                                  [1, 0]])
+        product = np.dot(x_gate_matrix,  self.as_vector())
+        support = QBit.from_vector(product)
+        self.theta = support.theta
+        self.phi   = support.phi  
+
+    def h_gate(self):
+        """Applies a 'h' (hadamard) gate to target qbit.
+        
+        The h gate is represented as a matrix:
+           1     | 1  1 | 
+        sqrt(2)  | 1 -1 |
+        """
+        h_gate_matrix = 1/np.sqrt(2)*np.array([[1,  1],
+                                               [1, -1]])
+        product = np.dot(h_gate_matrix,  self.as_vector())
+        #print("product:")
+        #print(product)
+        support = QBit.from_vector(product)
+        #print("support:")
+        #print(support)
+        #print()
+        self.theta = support.theta
+        self.phi   = support.phi  
+
+    # Print and Repr
+    
     def __str__(self):
         """Print as 'A QBit with angle 'theta' and phase 'phi'."""
         self_class = type(self).__name__
         # \u03C0 is pi in unicode
         msg = "A {0} with angle {1}\u03C0 and phase {2}\u03C0."
-        return msg.format(self_class, self.theta / PI, self.phi / PI)
+        return msg.format(self_class, np.around(self.theta / PI, 2), np.around(self.phi / PI,2))
 
     def __repr__(self):
         """Represents as 'Qbit(theta,phi)'."""
         self_class = type(self).__name__
         msg = "{0}({1},{2})"
-        return msg.format(self_class, self.theta / PI, self.phi / PI)
+        return msg.format(self_class, np.around(self.theta / PI, 2), np.around(self.phi / PI,2))
     
     
 if __name__ == '__main__':
