@@ -117,19 +117,38 @@ class QBit(object):
         
     # 1-qbit gates
     
+    def general_qbit_gate(self, l, t, p):
+        """Applies a general transformation to target qbit.
+        
+        The x gate is represented as a matrix with three parameters:
+        - lambda (l)
+        - theta  (t)
+        - phi    (p)
+
+        | cos(theta/2)               -exp(i lambda) sin(theta/2)        |
+        | exp(i phi) sin(theta/2)     exp[i (lamda + phi)] cos(theta/2) |
+        """
+        general_gate_matrix = np.array([[np.cos(t/2),                  -np.exp(l * 1j) * np.sin(t/2)],
+                                        [np.exp(p * 1j) * np.sin(t/2),  np.exp((l + p)*1j) * np.cos(t/2)]])
+        product = np.dot(general_gate_matrix,  self.as_vector())
+        support = QBit.from_vector(product)
+        self.theta = support.theta
+        self.phi   = support.phi  
+        
+
     def x_gate(self):
         """Applies a 'x' gate to target qbit.
         
         The x gate is represented as a matrix:
         | 0 1 |
         | 1 0 |
+
+        It is obtained from 'general_qbit_gate' with:
+        l = 0
+        t = PI
+        p = 0
         """
-        x_gate_matrix = np.array([[0, 1],
-                                  [1, 0]])
-        product = np.dot(x_gate_matrix,  self.as_vector())
-        support = QBit.from_vector(product)
-        self.theta = support.theta
-        self.phi   = support.phi  
+        self.general_qbit_gate(0, PI, 0)
 
     def h_gate(self):
         """Applies a 'h' (hadamard) gate to target qbit.
@@ -137,18 +156,79 @@ class QBit(object):
         The h gate is represented as a matrix:
            1     | 1  1 | 
         sqrt(2)  | 1 -1 |
+
+        It is obtained from 'general_qbit_gate' with:
+        l = PI
+        t = PI/2
+        p = 0
         """
-        h_gate_matrix = 1/np.sqrt(2)*np.array([[1,  1],
-                                               [1, -1]])
-        product = np.dot(h_gate_matrix,  self.as_vector())
-        #print("product:")
-        #print(product)
-        support = QBit.from_vector(product)
-        #print("support:")
-        #print(support)
-        #print()
-        self.theta = support.theta
-        self.phi   = support.phi  
+        self.general_qbit_gate(PI, PI/2, 0)
+
+    def u1_gate(self, l):
+        """Applies a 'u1' gate to target qbit.
+        
+        The h gate is represented as a matrix:
+        | 1        0       | 
+        | 0  exp(i lambda) |
+
+        It is obtained from 'general_qbit_gate' with:
+        l = lamda
+        t = 0
+        p = 0
+        """
+        self.general_qbit_gate(l, 0, 0)
+
+    def u2_gate(self, l, p):
+        """Applies a 'u2' gate to target qbit.
+        
+        The h gate is represented as a matrix:
+           1     |     1          -exp(i lambda)   | 
+        sqrt(2)  | exp(i phi)  exp[i(lambda + phi) |
+
+        It is obtained from 'general_qbit_gate' with:
+        l = lamda
+        t = 0
+        p = phi
+        """
+        self.general_qbit_gate(l, 0, p)
+
+    def u3_gate(self, l, t, p):
+        """Applies a 'u3' gate to target qbit.
+        
+        It corresponds to the general_qbit_gate, 
+        so it just calls it.
+        """
+        self.general_qbit_gate(l, t, p)
+
+    # DEPRECATED VERSION
+    #    def x_gate(self):
+    #        """Applies a 'x' gate to target qbit.
+    #        
+    #        The x gate is represented as a matrix:
+    #        | 0 1 |
+    #        | 1 0 |
+    #        """
+    #        x_gate_matrix = np.array([[0, 1],
+    #                                  [1, 0]])
+    #        product = np.dot(x_gate_matrix,  self.as_vector())
+    #        support = QBit.from_vector(product)
+    #        self.theta = support.theta
+    #        self.phi   = support.phi  
+
+    # DEPRECATED VERSION
+    #    def h_gate(self):
+    #        """Applies a 'h' (hadamard) gate to target qbit.
+    #        
+    #        The h gate is represented as a matrix:
+    #           1     | 1  1 | 
+    #        sqrt(2)  | 1 -1 |
+    #        """
+    #        h_gate_matrix = 1/np.sqrt(2)*np.array([[1,  1],
+    #                                               [1, -1]])
+    #        product = np.dot(h_gate_matrix,  self.as_vector())
+    #        support = QBit.from_vector(product)
+    #        self.theta = support.theta
+    #        self.phi   = support.phi  
 
     # Print and Repr
     
