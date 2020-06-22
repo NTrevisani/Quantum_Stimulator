@@ -69,7 +69,7 @@ class QBit(object):
         the |1> state, it returns 1.
         """
         random_number = random.uniform(0, 1)
-        if random_number < np.cos(self.theta):
+        if random_number < np.cos(self.theta / 2):
             self.theta = 0
             self.phi = 0
             return 0
@@ -104,12 +104,10 @@ class QBit(object):
     def from_vector(vector_repr):
         """Returns a qbit from its vector representation."""
         new_theta = float(np.real(2*np.arccos(vector_repr[0])))
-        #print("New_theta = ",new_theta)
         if np.sin(new_theta/2) < 0.0001: # is this cheating?
             new_phi = 0
         else:
             new_phi   = float(np.angle(vector_repr[1] / np.sin(new_theta/2)))
-        #print("New_phi = ", new_phi)
         support_qbit = QBit()
         support_qbit.theta = new_theta
         support_qbit.phi   = new_phi
@@ -230,6 +228,73 @@ class QBit(object):
     #        self.theta = support.theta
     #        self.phi   = support.phi  
 
+    # 2-qbit gates
+    
+    def c_not_gate(self, other):
+        """Applies a 'c-not' gate to a pair of qbits.
+
+        'self' is the control qbit,
+        'other' is the target qbit.
+
+        The c-not gate applies a x-gate to target qbit
+        if the control qbit, after being measured, is
+        found in the |1> state, otherwise do nothing.
+        """
+        if self.measure() == 1:
+            other.x_gate()
+        
+    def c_h_gate(self, other):
+        """Applies a 'c-hadamard' gate to a pair of qbits.
+
+        'self' is the control qbit,
+        'other' is the target qbit.
+
+        The c-hadamard gate applies a h-gate to target qbit
+        if the control qbit, after being measured, is
+        found in the |1> state, otherwise do nothing.
+        """
+        if self.measure() == 1:
+            other.h_gate()
+        
+    def c_u1_gate(self, other, l):
+        """Applies a 'c-u1' gate to a pair of qbits.
+
+        'self' is the control qbit,
+        'other' is the target qbit.
+
+        The c-u1 gate applies a u1-gate to target qbit
+        if the control qbit, after being measured, is
+        found in the |1> state, otherwise do nothing.
+        """
+        if self.measure() == 1:
+            other.u1_gate(l)
+        
+    def c_u2_gate(self, other, l, p):
+        """Applies a 'c-u2' gate to a pair of qbits.
+
+        'self' is the control qbit,
+        'other' is the target qbit.
+
+        The c-u2 gate applies a u2-gate to target qbit
+        if the control qbit, after being measured, is
+        found in the |1> state, otherwise do nothing.
+        """
+        if self.measure() == 1:
+            other.u2_gate(l, p)
+        
+    def c_u3_gate(self, other, l, t, p):
+        """Applies a 'c-u3' gate to a pair of qbits.
+
+        'self' is the control qbit,
+        'other' is the target qbit.
+
+        The c-u3 gate applies a u3-gate to target qbit
+        if the control qbit, after being measured, is
+        found in the |1> state, otherwise do nothing.
+        """
+        if self.measure() == 1:
+            other.u3_gate(l, t, p)
+        
     # Print and Repr
     
     def __str__(self):
