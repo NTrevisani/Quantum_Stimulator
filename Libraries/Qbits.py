@@ -69,7 +69,7 @@ class QBit(object):
         the |1> state, it returns 1.
         """
         random_number = random.uniform(0, 1)
-        if random_number < np.cos(self.theta / 2):
+        if random_number < np.cos(self.theta / 2)**2:
             self.theta = 0
             self.phi = 0
             return 0
